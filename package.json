@@ -1,6 +1,6 @@
 {
   "name": "@managed-oss/recall-room",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Privacy-aware meeting evidence, decisions, owners, commitments, and reviewed follow-up proposals.",
   "type": "module",
   "license": "MIT",
