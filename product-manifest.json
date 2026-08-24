@@ -1,0 +1,945 @@
+{
+  "schemaVersion": 1,
+  "release": {
+    "productVersion": "0.1.0",
+    "backendRelease": "v0.4.2",
+    "backendCommit": "20c4a704c77cbbbff1da995e1d91b937625a8aa4",
+    "backendSourceSnapshotSha256": "d0b7b1079d4924eb7369c788a979a707d45bb63470290e6ac33ee5662d78f69f",
+    "generatedAt": "2026-08-24T00:00:00.000Z",
+    "generator": "managed-oss-cloud/scripts/generate-product-repositories.mjs"
+  },
+  "product": {
+    "slug": "recall-room",
+    "command": "recall-room",
+    "mcpPrefix": "recall_room",
+    "environmentPrefix": "RECALL_ROOM",
+    "name": "Recall Room",
+    "tagline": "Privacy-aware meeting evidence, decisions, owners, commitments, and reviewed follow-up proposals.",
+    "repository": "https://github.com/rohanarun/recall-room",
+    "license": "MIT",
+    "accent": "#aa96ff",
+    "accentDark": "#5f4aaf"
+  },
+  "module": {
+    "id": "meetings",
+    "category": "Meeting decisions and commitments",
+    "description": "Preserve meetings as a privacy-aware ledger of participants, transcript evidence, decisions, owners, and reviewed follow-up proposals.",
+    "minimumHostedPlan": "scale",
+    "resourceClass": "high",
+    "resourceRequirements": {
+      "class": "high",
+      "minimumCpuMillicores": 500,
+      "minimumMemoryMiB": 768,
+      "includedStorageGb": 10,
+      "recommendedWorkerConcurrency": 2
+    },
+    "recordTypes": [
+      "meeting",
+      "meeting-participant",
+      "transcript-segment",
+      "meeting-decision",
+      "meeting-action-item",
+      "ai-proposal-request",
+      "meeting-export",
+      "additive-command-receipt"
+    ],
+    "aiCapabilities": [
+      "Transcript-cited proposals",
+      "Human-owned decisions",
+      "Approval-gated redaction"
+    ]
+  },
+  "backend": {
+    "defaultUrl": "https://cloud.getsupers.com",
+    "workspaceEndpoint": "/api/suite/workspace",
+    "actionEndpointPattern": "/api/suite/modules/meetings/actions/{actionId}",
+    "authentication": "Bearer API token",
+    "databaseBoundary": "All shared database access and tenant isolation remain behind the managed-oss-cloud API."
+  },
+  "cleanRoom": {
+    "statement": "Original clean-room implementation of the meeting decisions and commitments software category, designed and written independently.",
+    "sourceBoundary": "Public category behavior informed requirements; implementation and product identity are original."
+  },
+  "actions": [
+    {
+      "id": "meeting-create",
+      "moduleId": "meetings",
+      "title": "Create meeting ledger",
+      "description": "Create a purpose-bound meeting with explicit start time and privacy classification.",
+      "operation": "command",
+      "recordType": "meeting",
+      "requiredFields": [
+        "title",
+        "purpose",
+        "startsAt",
+        "privacy",
+        "idempotencyKey"
+      ],
+      "engine": "additive",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "title",
+          "purpose",
+          "startsAt",
+          "privacy",
+          "idempotencyKey"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240,
+            "description": "Meeting title."
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "description": "Meeting purpose."
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Scheduled UTC start."
+          },
+          "privacy": {
+            "type": "string",
+            "enum": [
+              "workspace",
+              "confidential",
+              "restricted"
+            ],
+            "description": "Privacy class."
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9._:-]{16,200}$",
+            "description": "A retry-safe key unique to this logical mutation."
+          }
+        },
+        "additionalProperties": false
+      },
+      "exampleInput": {
+        "title": "Launch review",
+        "purpose": "Choose a safe launch window",
+        "startsAt": "2026-08-25T15:00:00.000Z",
+        "privacy": "confidential",
+        "idempotencyKey": "meetings.meeting-create.example-0001"
+      },
+      "requiredScope": "write",
+      "mcpToolName": "meetings_meeting_create",
+      "cliExample": "supersuite action meetings meeting-create '{\"title\":\"Launch review\",\"purpose\":\"Choose a safe launch window\",\"startsAt\":\"2026-08-25T15:00:00.000Z\",\"privacy\":\"confidential\",\"idempotencyKey\":\"meetings.meeting-create.example-0001\"}'",
+      "risk": "low",
+      "destructive": false,
+      "externalEffect": "none",
+      "idempotent": true,
+      "requiresApproval": false,
+      "supportsDryRun": false,
+      "minimumRole": "member",
+      "backendMcpToolName": "meetings_meeting_create",
+      "productMcpToolName": "recall_room_meeting_create",
+      "productCliExample": "recall-room action meeting-create '{\"title\":\"Launch review\",\"purpose\":\"Choose a safe launch window\",\"startsAt\":\"2026-08-25T15:00:00.000Z\",\"privacy\":\"confidential\",\"idempotencyKey\":\"meetings.meeting-create.example-0001\"}'"
+    },
+    {
+      "id": "participant-add",
+      "moduleId": "meetings",
+      "title": "Add attributed participant",
+      "description": "Add a participant and attendance role without importing address books.",
+      "operation": "command",
+      "recordType": "meeting-participant",
+      "requiredFields": [
+        "meetingId",
+        "displayName",
+        "role",
+        "idempotencyKey"
+      ],
+      "engine": "additive",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "meetingId",
+          "displayName",
+          "role",
+          "idempotencyKey"
+        ],
+        "properties": {
+          "meetingId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Meeting ID."
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160,
+            "description": "Participant display name."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "host",
+              "participant",
+              "observer"
+            ],
+            "description": "Attendance role."
+          },
+          "userRef": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Optional workspace user reference."
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9._:-]{16,200}$",
+            "description": "A retry-safe key unique to this logical mutation."
+          }
+        },
+        "additionalProperties": false
+      },
+      "exampleInput": {
+        "meetingId": "00000000-0000-4000-8000-000000000100",
+        "displayName": "Avery",
+        "role": "participant",
+        "userRef": "user-owner-0001",
+        "idempotencyKey": "meetings.participant-add.example-0001"
+      },
+      "requiredScope": "write",
+      "mcpToolName": "meetings_participant_add",
+      "cliExample": "supersuite action meetings participant-add '{\"meetingId\":\"00000000-0000-4000-8000-000000000100\",\"displayName\":\"Avery\",\"role\":\"participant\",\"userRef\":\"user-owner-0001\",\"idempotencyKey\":\"meetings.participant-add.example-0001\"}'",
+      "risk": "low",
+      "destructive": false,
+      "externalEffect": "none",
+      "idempotent": true,
+      "requiresApproval": false,
+      "supportsDryRun": false,
+      "minimumRole": "member",
+      "backendMcpToolName": "meetings_participant_add",
+      "productMcpToolName": "recall_room_participant_add",
+      "productCliExample": "recall-room action participant-add '{\"meetingId\":\"00000000-0000-4000-8000-000000000100\",\"displayName\":\"Avery\",\"role\":\"participant\",\"userRef\":\"user-owner-0001\",\"idempotencyKey\":\"meetings.participant-add.example-0001\"}'"
+    },
+    {
+      "id": "transcript-append",
+      "moduleId": "meetings",
+      "title": "Append transcript evidence",
+      "description": "Append a time-bounded transcript segment with speaker and capture provenance.",
+      "operation": "command",
+      "recordType": "transcript-segment",
+      "requiredFields": [
+        "meetingId",
+        "speaker",
+        "startMs",
+        "endMs",
+        "text",
+        "source",
+        "idempotencyKey"
+      ],
+      "engine": "additive",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "meetingId",
+          "speaker",
+          "startMs",
+          "endMs",
+          "text",
+          "source",
+          "idempotencyKey"
+        ],
+        "properties": {
+          "meetingId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Meeting ID."
+          },
+          "speaker": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160,
+            "description": "Speaker label."
+          },
+          "startMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Segment start in milliseconds."
+          },
+          "endMs": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991,
+            "description": "Segment end in milliseconds."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000,
+            "description": "Transcript text."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "local-transcription",
+              "imported"
+            ],
+            "description": "Capture source."
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9._:-]{16,200}$",
+            "description": "A retry-safe key unique to this logical mutation."
+          }
+        },
+        "additionalProperties": false
+      },
+      "exampleInput": {
+        "meetingId": "00000000-0000-4000-8000-000000000100",
+        "speaker": "Avery",
+        "startMs": 0,
+        "endMs": 8000,
+        "text": "Tuesday is the proposed launch day.",
+        "source": "local-transcription",
+        "idempotencyKey": "meetings.transcript-append.example-0001"
+      },
+      "requiredScope": "write",
+      "mcpToolName": "meetings_transcript_append",
+      "cliExample": "supersuite action meetings transcript-append '{\"meetingId\":\"00000000-0000-4000-8000-000000000100\",\"speaker\":\"Avery\",\"startMs\":0,\"endMs\":8000,\"text\":\"Tuesday is the proposed launch day.\",\"source\":\"local-transcription\",\"idempotencyKey\":\"meetings.transcript-append.example-0001\"}'",
+      "risk": "low",
+      "destructive": false,
+      "externalEffect": "none",
+      "idempotent": true,
+      "requiresApproval": false,
+      "supportsDryRun": false,
+      "minimumRole": "member",
+      "backendMcpToolName": "meetings_transcript_append",
+      "productMcpToolName": "recall_room_transcript_append",
+      "productCliExample": "recall-room action transcript-append '{\"meetingId\":\"00000000-0000-4000-8000-000000000100\",\"speaker\":\"Avery\",\"startMs\":0,\"endMs\":8000,\"text\":\"Tuesday is the proposed launch day.\",\"source\":\"local-transcription\",\"idempotencyKey\":\"meetings.transcript-append.example-0001\"}'"
+    },
+    {
+      "id": "decision-record",
+      "moduleId": "meetings",
+      "title": "Record human decision",
+      "description": "Record an explicit decision, owner, rationale, and supporting tenant evidence.",
+      "operation": "command",
+      "recordType": "meeting-decision",
+      "requiredFields": [
+        "meetingId",
+        "decision",
+        "ownerRef",
+        "evidenceIds",
+        "idempotencyKey"
+      ],
+      "engine": "additive",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "meetingId",
+          "decision",
+          "ownerRef",
+          "evidenceIds",
+          "idempotencyKey"
+        ],
+        "properties": {
+          "meetingId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Meeting ID."
+          },
+          "decision": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "description": "Human-authored decision."
+          },
+          "ownerRef": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Responsible workspace identity."
+          },
+          "evidenceIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 500,
+            "description": "Tenant-owned record IDs selected as evidence."
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9._:-]{16,200}$",
+            "description": "A retry-safe key unique to this logical mutation."
+          }
+        },
+        "additionalProperties": false
+      },
+      "exampleInput": {
+        "meetingId": "00000000-0000-4000-8000-000000000100",
+        "decision": "Launch Tuesday after final checks.",
+        "ownerRef": "user-owner-0001",
+        "evidenceIds": [
+          "00000000-0000-4000-8000-000000000101"
+        ],
+        "idempotencyKey": "meetings.decision-record.example-0001"
+      },
+      "requiredScope": "write",
+      "mcpToolName": "meetings_decision_record",
+      "cliExample": "supersuite action meetings decision-record '{\"meetingId\":\"00000000-0000-4000-8000-000000000100\",\"decision\":\"Launch Tuesday after final checks.\",\"ownerRef\":\"user-owner-0001\",\"evidenceIds\":[\"00000000-0000-4000-8000-000000000101\"],\"idempotencyKey\":\"meetings.decision-record.example-0001\"}'",
+      "risk": "low",
+      "destructive": false,
+      "externalEffect": "none",
+      "idempotent": true,
+      "requiresApproval": false,
+      "supportsDryRun": false,
+      "minimumRole": "member",
+      "backendMcpToolName": "meetings_decision_record",
+      "productMcpToolName": "recall_room_decision_record",
+      "productCliExample": "recall-room action decision-record '{\"meetingId\":\"00000000-0000-4000-8000-000000000100\",\"decision\":\"Launch Tuesday after final checks.\",\"ownerRef\":\"user-owner-0001\",\"evidenceIds\":[\"00000000-0000-4000-8000-000000000101\"],\"idempotencyKey\":\"meetings.decision-record.example-0001\"}'"
+    },
+    {
+      "id": "action-item-create",
+      "moduleId": "meetings",
+      "title": "Create owned action item",
+      "description": "Create a human-assigned commitment with due date and decision evidence.",
+      "operation": "command",
+      "recordType": "meeting-action-item",
+      "requiredFields": [
+        "meetingId",
+        "title",
+        "ownerRef",
+        "dueAt",
+        "evidenceIds",
+        "idempotencyKey"
+      ],
+      "engine": "additive",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "meetingId",
+          "title",
+          "ownerRef",
+          "dueAt",
+          "evidenceIds",
+          "idempotencyKey"
+        ],
+        "properties": {
+          "meetingId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Meeting ID."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Action item."
+          },
+          "ownerRef": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Responsible workspace identity."
+          },
+          "dueAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC due time."
+          },
+          "evidenceIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 500,
+            "description": "Tenant-owned record IDs selected as evidence."
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9._:-]{16,200}$",
+            "description": "A retry-safe key unique to this logical mutation."
+          }
+        },
+        "additionalProperties": false
+      },
+      "exampleInput": {
+        "meetingId": "00000000-0000-4000-8000-000000000100",
+        "title": "Complete release checks",
+        "ownerRef": "user-owner-0001",
+        "dueAt": "2026-08-26T15:00:00.000Z",
+        "evidenceIds": [
+          "00000000-0000-4000-8000-000000000101"
+        ],
+        "idempotencyKey": "meetings.action-item-create.example-0001"
+      },
+      "requiredScope": "write",
+      "mcpToolName": "meetings_action_item_create",
+      "cliExample": "supersuite action meetings action-item-create '{\"meetingId\":\"00000000-0000-4000-8000-000000000100\",\"title\":\"Complete release checks\",\"ownerRef\":\"user-owner-0001\",\"dueAt\":\"2026-08-26T15:00:00.000Z\",\"evidenceIds\":[\"00000000-0000-4000-8000-000000000101\"],\"idempotencyKey\":\"meetings.action-item-create.example-0001\"}'",
+      "risk": "low",
+      "destructive": false,
+      "externalEffect": "none",
+      "idempotent": true,
+      "requiresApproval": false,
+      "supportsDryRun": false,
+      "minimumRole": "member",
+      "backendMcpToolName": "meetings_action_item_create",
+      "productMcpToolName": "recall_room_action_item_create",
+      "productCliExample": "recall-room action action-item-create '{\"meetingId\":\"00000000-0000-4000-8000-000000000100\",\"title\":\"Complete release checks\",\"ownerRef\":\"user-owner-0001\",\"dueAt\":\"2026-08-26T15:00:00.000Z\",\"evidenceIds\":[\"00000000-0000-4000-8000-000000000101\"],\"idempotencyKey\":\"meetings.action-item-create.example-0001\"}'"
+    },
+    {
+      "id": "summary-propose",
+      "moduleId": "meetings",
+      "title": "Queue cited meeting summary",
+      "description": "Queue a chronology, decision, and open-question proposal pinned to selected evidence; it cannot record decisions.",
+      "operation": "ai",
+      "recordType": "ai-proposal-request",
+      "requiredFields": [
+        "meetingId",
+        "goal",
+        "evidenceIds",
+        "idempotencyKey",
+        "dryRun"
+      ],
+      "engine": "additive",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "meetingId",
+          "goal",
+          "evidenceIds",
+          "idempotencyKey",
+          "dryRun"
+        ],
+        "properties": {
+          "meetingId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Meeting ID."
+          },
+          "goal": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "description": "Summary goal."
+          },
+          "evidenceIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 500,
+            "description": "Tenant-owned record IDs selected as evidence."
+          },
+          "modelId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Optional expected workspace-configured model identifier. When omitted, the trusted workspace policy is used; never a credential."
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9._:-]{16,200}$",
+            "description": "A retry-safe key unique to this logical mutation."
+          },
+          "dryRun": {
+            "type": "boolean",
+            "description": "When true, validate and return a preview without persisting or performing the effect."
+          },
+          "approval": {
+            "type": "object",
+            "description": "Attributed human approval of the exact requested effect.",
+            "required": [
+              "approved",
+              "approvedBy",
+              "approvedAt",
+              "decisionId",
+              "reason"
+            ],
+            "properties": {
+              "approved": {
+                "const": true
+              },
+              "approvedBy": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "approvedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "decisionId": {
+                "type": "string",
+                "minLength": 16,
+                "maxLength": 200,
+                "pattern": "^[A-Za-z0-9._:-]{16,200}$"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "exampleInput": {
+        "meetingId": "00000000-0000-4000-8000-000000000100",
+        "goal": "Summarize supported decisions and open questions.",
+        "evidenceIds": [
+          "00000000-0000-4000-8000-000000000101"
+        ],
+        "idempotencyKey": "meetings.summary-propose.example-0001",
+        "dryRun": true
+      },
+      "requiredScope": "ai",
+      "mcpToolName": "meetings_summary_propose",
+      "cliExample": "supersuite action meetings summary-propose '{\"meetingId\":\"00000000-0000-4000-8000-000000000100\",\"goal\":\"Summarize supported decisions and open questions.\",\"evidenceIds\":[\"00000000-0000-4000-8000-000000000101\"],\"idempotencyKey\":\"meetings.summary-propose.example-0001\",\"dryRun\":true}'",
+      "risk": "high",
+      "destructive": false,
+      "externalEffect": "model",
+      "idempotent": true,
+      "requiresApproval": true,
+      "supportsDryRun": true,
+      "minimumRole": "admin",
+      "backendMcpToolName": "meetings_summary_propose",
+      "productMcpToolName": "recall_room_summary_propose",
+      "productCliExample": "recall-room action summary-propose '{\"meetingId\":\"00000000-0000-4000-8000-000000000100\",\"goal\":\"Summarize supported decisions and open questions.\",\"evidenceIds\":[\"00000000-0000-4000-8000-000000000101\"],\"idempotencyKey\":\"meetings.summary-propose.example-0001\",\"dryRun\":true}'"
+    },
+    {
+      "id": "followup-propose",
+      "moduleId": "meetings",
+      "title": "Queue follow-up proposal",
+      "description": "Queue draft follow-up copy with citations; it cannot send, assign, or schedule anything.",
+      "operation": "ai",
+      "recordType": "ai-proposal-request",
+      "requiredFields": [
+        "meetingId",
+        "audience",
+        "goal",
+        "evidenceIds",
+        "idempotencyKey",
+        "dryRun"
+      ],
+      "engine": "additive",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "meetingId",
+          "audience",
+          "goal",
+          "evidenceIds",
+          "idempotencyKey",
+          "dryRun"
+        ],
+        "properties": {
+          "meetingId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Meeting ID."
+          },
+          "audience": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "description": "Intended audience."
+          },
+          "goal": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000,
+            "description": "Follow-up goal."
+          },
+          "evidenceIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 500,
+            "description": "Tenant-owned record IDs selected as evidence."
+          },
+          "modelId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Optional expected workspace-configured model identifier. When omitted, the trusted workspace policy is used; never a credential."
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9._:-]{16,200}$",
+            "description": "A retry-safe key unique to this logical mutation."
+          },
+          "dryRun": {
+            "type": "boolean",
+            "description": "When true, validate and return a preview without persisting or performing the effect."
+          },
+          "approval": {
+            "type": "object",
+            "description": "Attributed human approval of the exact requested effect.",
+            "required": [
+              "approved",
+              "approvedBy",
+              "approvedAt",
+              "decisionId",
+              "reason"
+            ],
+            "properties": {
+              "approved": {
+                "const": true
+              },
+              "approvedBy": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "approvedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "decisionId": {
+                "type": "string",
+                "minLength": 16,
+                "maxLength": 200,
+                "pattern": "^[A-Za-z0-9._:-]{16,200}$"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "exampleInput": {
+        "meetingId": "00000000-0000-4000-8000-000000000100",
+        "audience": "Meeting participants",
+        "goal": "Draft a factual recap.",
+        "evidenceIds": [
+          "00000000-0000-4000-8000-000000000101"
+        ],
+        "idempotencyKey": "meetings.followup-propose.example-0001",
+        "dryRun": true
+      },
+      "requiredScope": "ai",
+      "mcpToolName": "meetings_followup_propose",
+      "cliExample": "supersuite action meetings followup-propose '{\"meetingId\":\"00000000-0000-4000-8000-000000000100\",\"audience\":\"Meeting participants\",\"goal\":\"Draft a factual recap.\",\"evidenceIds\":[\"00000000-0000-4000-8000-000000000101\"],\"idempotencyKey\":\"meetings.followup-propose.example-0001\",\"dryRun\":true}'",
+      "risk": "high",
+      "destructive": false,
+      "externalEffect": "model",
+      "idempotent": true,
+      "requiresApproval": true,
+      "supportsDryRun": true,
+      "minimumRole": "admin",
+      "backendMcpToolName": "meetings_followup_propose",
+      "productMcpToolName": "recall_room_followup_propose",
+      "productCliExample": "recall-room action followup-propose '{\"meetingId\":\"00000000-0000-4000-8000-000000000100\",\"audience\":\"Meeting participants\",\"goal\":\"Draft a factual recap.\",\"evidenceIds\":[\"00000000-0000-4000-8000-000000000101\"],\"idempotencyKey\":\"meetings.followup-propose.example-0001\",\"dryRun\":true}'"
+    },
+    {
+      "id": "transcript-redact",
+      "moduleId": "meetings",
+      "title": "Redact transcript segment",
+      "description": "Replace transcript text with an auditable redaction marker after explicit approval and optimistic locking.",
+      "operation": "command",
+      "recordType": "transcript-segment",
+      "requiredFields": [
+        "segmentId",
+        "expectedVersion",
+        "reason",
+        "idempotencyKey",
+        "dryRun"
+      ],
+      "engine": "additive",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "segmentId",
+          "expectedVersion",
+          "reason",
+          "idempotencyKey",
+          "dryRun"
+        ],
+        "properties": {
+          "segmentId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Transcript segment ID."
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991,
+            "description": "Current segment version."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "description": "Redaction reason."
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9._:-]{16,200}$",
+            "description": "A retry-safe key unique to this logical mutation."
+          },
+          "dryRun": {
+            "type": "boolean",
+            "description": "When true, validate and return a preview without persisting or performing the effect."
+          },
+          "approval": {
+            "type": "object",
+            "description": "Attributed human approval of the exact requested effect.",
+            "required": [
+              "approved",
+              "approvedBy",
+              "approvedAt",
+              "decisionId",
+              "reason"
+            ],
+            "properties": {
+              "approved": {
+                "const": true
+              },
+              "approvedBy": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "approvedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "decisionId": {
+                "type": "string",
+                "minLength": 16,
+                "maxLength": 200,
+                "pattern": "^[A-Za-z0-9._:-]{16,200}$"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "exampleInput": {
+        "segmentId": "00000000-0000-4000-8000-000000000100",
+        "expectedVersion": 1,
+        "reason": "Approved privacy request",
+        "idempotencyKey": "meetings.transcript-redact.example-0001",
+        "dryRun": true
+      },
+      "requiredScope": "write",
+      "mcpToolName": "meetings_transcript_redact",
+      "cliExample": "supersuite action meetings transcript-redact '{\"segmentId\":\"00000000-0000-4000-8000-000000000100\",\"expectedVersion\":1,\"reason\":\"Approved privacy request\",\"idempotencyKey\":\"meetings.transcript-redact.example-0001\",\"dryRun\":true}'",
+      "risk": "critical",
+      "destructive": true,
+      "externalEffect": "none",
+      "idempotent": true,
+      "requiresApproval": true,
+      "supportsDryRun": true,
+      "minimumRole": "admin",
+      "backendMcpToolName": "meetings_transcript_redact",
+      "productMcpToolName": "recall_room_transcript_redact",
+      "productCliExample": "recall-room action transcript-redact '{\"segmentId\":\"00000000-0000-4000-8000-000000000100\",\"expectedVersion\":1,\"reason\":\"Approved privacy request\",\"idempotencyKey\":\"meetings.transcript-redact.example-0001\",\"dryRun\":true}'"
+    },
+    {
+      "id": "meeting-export",
+      "moduleId": "meetings",
+      "title": "Freeze private meeting export",
+      "description": "Create an immutable private export manifest with selected transcript and decision record IDs.",
+      "operation": "command",
+      "recordType": "meeting-export",
+      "requiredFields": [
+        "meetingId",
+        "includeTranscript",
+        "format",
+        "idempotencyKey"
+      ],
+      "engine": "additive",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "meetingId",
+          "includeTranscript",
+          "format",
+          "idempotencyKey"
+        ],
+        "properties": {
+          "meetingId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Meeting ID."
+          },
+          "includeTranscript": {
+            "type": "boolean",
+            "description": "Whether transcript segments are included."
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "canonical-json",
+              "markdown"
+            ],
+            "description": "Export format."
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9._:-]{16,200}$",
+            "description": "A retry-safe key unique to this logical mutation."
+          }
+        },
+        "additionalProperties": false
+      },
+      "exampleInput": {
+        "meetingId": "00000000-0000-4000-8000-000000000100",
+        "includeTranscript": true,
+        "format": "canonical-json",
+        "idempotencyKey": "meetings.meeting-export.example-0001"
+      },
+      "requiredScope": "write",
+      "mcpToolName": "meetings_meeting_export",
+      "cliExample": "supersuite action meetings meeting-export '{\"meetingId\":\"00000000-0000-4000-8000-000000000100\",\"includeTranscript\":true,\"format\":\"canonical-json\",\"idempotencyKey\":\"meetings.meeting-export.example-0001\"}'",
+      "risk": "low",
+      "destructive": false,
+      "externalEffect": "none",
+      "idempotent": true,
+      "requiresApproval": false,
+      "supportsDryRun": false,
+      "minimumRole": "member",
+      "backendMcpToolName": "meetings_meeting_export",
+      "productMcpToolName": "recall_room_meeting_export",
+      "productCliExample": "recall-room action meeting-export '{\"meetingId\":\"00000000-0000-4000-8000-000000000100\",\"includeTranscript\":true,\"format\":\"canonical-json\",\"idempotencyKey\":\"meetings.meeting-export.example-0001\"}'"
+    }
+  ]
+}

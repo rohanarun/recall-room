@@ -1,0 +1,36 @@
+{
+  "name": "@managed-oss/recall-room",
+  "version": "0.1.0",
+  "description": "Privacy-aware meeting evidence, decisions, owners, commitments, and reviewed follow-up proposals.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rohanarun/recall-room.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rohanarun/recall-room/issues"
+  },
+  "homepage": "https://github.com/rohanarun/recall-room#readme",
+  "engines": {
+    "node": ">=20.11"
+  },
+  "bin": {
+    "recall-room": "src/cli.mjs",
+    "recall-room-mcp": "src/mcp.mjs"
+  },
+  "files": [
+    "src",
+    "web",
+    "product-manifest.json",
+    "LICENSE",
+    "README.md",
+    "SECURITY.md",
+    "Dockerfile"
+  ],
+  "scripts": {
+    "start": "node src/web-server.mjs",
+    "test": "node --test --test-concurrency=1",
+    "verify": "node scripts/verify-manifest.mjs && node --test --test-concurrency=1"
+  }
+}
