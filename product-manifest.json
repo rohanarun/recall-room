@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "release": {
-    "productVersion": "0.1.1",
+    "productVersion": "0.2.0",
     "backendRelease": "v0.4.2",
     "backendCommit": "20c4a704c77cbbbff1da995e1d91b937625a8aa4",
     "backendSourceSnapshotSha256": "d0b7b1079d4924eb7369c788a979a707d45bb63470290e6ac33ee5662d78f69f",
@@ -59,6 +59,187 @@
   "cleanRoom": {
     "statement": "Original clean-room implementation of the meeting decisions and commitments software category, designed and written independently.",
     "sourceBoundary": "Public category behavior informed requirements; implementation and product identity are original."
+  },
+  "experience": {
+    "releaseBoundary": "Complete for every typed action declared by this product manifest; it does not claim feature parity with unrelated third-party products.",
+    "headline": "Privacy-aware meeting evidence",
+    "primaryActionId": "meeting-create",
+    "quickActionIds": [
+      "meeting-create",
+      "participant-add",
+      "transcript-append",
+      "decision-record"
+    ],
+    "navigation": [
+      "Overview",
+      "Records",
+      "Workflows",
+      "AI assistance",
+      "Settings"
+    ],
+    "workflowGroups": [
+      {
+        "name": "Create and capture",
+        "actionIds": [
+          "meeting-create",
+          "decision-record",
+          "action-item-create",
+          "meeting-export"
+        ]
+      },
+      {
+        "name": "Operate and update",
+        "actionIds": [
+          "participant-add",
+          "transcript-append"
+        ]
+      },
+      {
+        "name": "Review and approve",
+        "actionIds": [
+          "transcript-redact"
+        ]
+      },
+      {
+        "name": "AI assistance",
+        "actionIds": [
+          "summary-propose",
+          "followup-propose"
+        ]
+      }
+    ],
+    "metrics": [
+      {
+        "label": "Typed actions",
+        "value": 9
+      },
+      {
+        "label": "Record types",
+        "value": 8
+      },
+      {
+        "label": "AI workflows",
+        "value": 2
+      },
+      {
+        "label": "Review gates",
+        "value": 1
+      }
+    ],
+    "sampleRecords": [
+      {
+        "id": "demo-meetings-01",
+        "moduleId": "meetings",
+        "recordType": "meeting",
+        "title": "Meeting Launch",
+        "state": "active",
+        "createdAt": "2026-08-18T13:30:00.000Z",
+        "updatedAt": "2026-08-25T13:15:00.000Z",
+        "data": {
+          "owner": "Operations",
+          "evidenceStatus": "verified",
+          "nextStep": "Create meeting ledger"
+        }
+      },
+      {
+        "id": "demo-meetings-02",
+        "moduleId": "meetings",
+        "recordType": "meeting-participant",
+        "title": "Meeting Participant Operations",
+        "state": "in review",
+        "createdAt": "2026-08-19T13:30:00.000Z",
+        "updatedAt": "2026-08-25T12:15:00.000Z",
+        "data": {
+          "owner": "Product",
+          "evidenceStatus": "current",
+          "nextStep": "Add attributed participant"
+        }
+      },
+      {
+        "id": "demo-meetings-03",
+        "moduleId": "meetings",
+        "recordType": "transcript-segment",
+        "title": "Transcript Segment Evidence",
+        "state": "ready",
+        "createdAt": "2026-08-20T13:30:00.000Z",
+        "updatedAt": "2026-08-25T11:15:00.000Z",
+        "data": {
+          "owner": "Operations",
+          "evidenceStatus": "current",
+          "nextStep": "Append transcript evidence"
+        }
+      },
+      {
+        "id": "demo-meetings-04",
+        "moduleId": "meetings",
+        "recordType": "meeting-decision",
+        "title": "Meeting Decision Review",
+        "state": "scheduled",
+        "createdAt": "2026-08-21T13:30:00.000Z",
+        "updatedAt": "2026-08-25T10:15:00.000Z",
+        "data": {
+          "owner": "Product",
+          "evidenceStatus": "verified",
+          "nextStep": "Record human decision"
+        }
+      },
+      {
+        "id": "demo-meetings-05",
+        "moduleId": "meetings",
+        "recordType": "meeting-action-item",
+        "title": "Meeting Action Item Pilot",
+        "state": "draft",
+        "createdAt": "2026-08-22T13:30:00.000Z",
+        "updatedAt": "2026-08-25T09:15:00.000Z",
+        "data": {
+          "owner": "Operations",
+          "evidenceStatus": "current",
+          "nextStep": "Create owned action item"
+        }
+      },
+      {
+        "id": "demo-meetings-06",
+        "moduleId": "meetings",
+        "recordType": "ai-proposal-request",
+        "title": "Ai Proposal Request Archive",
+        "state": "complete",
+        "createdAt": "2026-08-23T13:30:00.000Z",
+        "updatedAt": "2026-08-25T08:15:00.000Z",
+        "data": {
+          "owner": "Product",
+          "evidenceStatus": "current",
+          "nextStep": "Queue cited meeting summary"
+        }
+      },
+      {
+        "id": "demo-meetings-07",
+        "moduleId": "meetings",
+        "recordType": "meeting-export",
+        "title": "Meeting Export Launch",
+        "state": "active",
+        "createdAt": "2026-08-24T13:30:00.000Z",
+        "updatedAt": "2026-08-25T07:15:00.000Z",
+        "data": {
+          "owner": "Operations",
+          "evidenceStatus": "verified",
+          "nextStep": "Queue follow-up proposal"
+        }
+      },
+      {
+        "id": "demo-meetings-08",
+        "moduleId": "meetings",
+        "recordType": "additive-command-receipt",
+        "title": "Additive Command Receipt Operations",
+        "state": "in review",
+        "createdAt": "2026-08-25T13:30:00.000Z",
+        "updatedAt": "2026-08-25T06:15:00.000Z",
+        "data": {
+          "owner": "Product",
+          "evidenceStatus": "current",
+          "nextStep": "Redact transcript segment"
+        }
+      }
+    ]
   },
   "actions": [
     {
