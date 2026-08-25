@@ -1,0 +1,19 @@
+1
+00:00:00,000 --> 00:00:02,250
+Explore the privacy-aware meeting evidence workspace.
+
+2
+00:00:02,250 --> 00:00:05,375
+Authenticate the workspace to load records and execute backend actions.
+
+3
+00:00:05,375 --> 00:00:08,000
+Enter the meeting title, purpose, scheduled start time, and privacy classification.
+
+4
+00:00:08,000 --> 00:00:10,375
+Submit the form to create and store the meeting ledger.
+
+5
+00:00:10,375 --> 00:00:17,000
+Search records and verify the newly scheduled meeting details.

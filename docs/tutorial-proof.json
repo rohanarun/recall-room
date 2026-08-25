@@ -1,0 +1,169 @@
+{
+  "schema": "managed-oss-functional-tutorial.v1",
+  "product": {
+    "slug": "recall-room",
+    "name": "Recall Room",
+    "moduleId": "meetings",
+    "version": "0.3.1",
+    "manifestSha256": "54e24bb52ef15399c91554b8e6f71b3372886934a644cb1f54e256bb745267ba"
+  },
+  "backend": {
+    "release": "v0.4.4",
+    "commit": "148abce99b91d8b9fdc8aa41c3f0eba283796db4"
+  },
+  "testedAt": "2026-08-25T22:01:07.859Z",
+  "browser": {
+    "engine": "Chromium",
+    "version": "151.0.7922.174",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "functionalProof": {
+    "action": {
+      "id": "meeting-create",
+      "title": "Create meeting ledger",
+      "httpStatus": 200
+    },
+    "record": {
+      "id": "2ad78f7b-2365-45f4-b66a-7275e5e4888a",
+      "recordType": "meeting",
+      "title": "Recall Room functional tutorial",
+      "state": "scheduled"
+    },
+    "detail": {
+      "httpStatus": 200,
+      "matched": true
+    },
+    "assertions": [
+      "browser-authenticated-real-backend",
+      "guided-form-submitted",
+      "action-http-200",
+      "durable-record-returned",
+      "record-detail-http-200",
+      "exact-record-reopened-in-ui"
+    ]
+  },
+  "timeline": [
+    {
+      "stepId": "overview",
+      "observedLabel": "Meet Recall Room",
+      "observedFact": "Open the real Recall Room workspace and identify its core workflow.",
+      "startMs": 0,
+      "endMs": 2250
+    },
+    {
+      "stepId": "connect",
+      "observedLabel": "Connect the workspace",
+      "observedFact": "Authenticate this browser to the isolated shared backend and load durable records.",
+      "startMs": 2250,
+      "endMs": 5375
+    },
+    {
+      "stepId": "configure",
+      "observedLabel": "Create meeting ledger",
+      "observedFact": "Complete the guided, contract-validated form for the product's primary workflow.",
+      "startMs": 5375,
+      "endMs": 8000
+    },
+    {
+      "stepId": "execute",
+      "observedLabel": "Run the real workflow",
+      "observedFact": "Submit the action to the shared backend and require a successful durable result.",
+      "startMs": 8000,
+      "endMs": 10375
+    },
+    {
+      "stepId": "inspect",
+      "observedLabel": "Inspect the saved record",
+      "observedFact": "Search the product record view and reopen the exact record returned by the workflow.",
+      "startMs": 10375,
+      "endMs": 17000
+    }
+  ],
+  "explanation": {
+    "title": "Creating a Meeting Ledger in Recall Room",
+    "summary": "Step through connecting your workspace, configuring meeting parameters, creating a meeting ledger, and verifying the scheduled record in Recall Room.",
+    "cues": [
+      {
+        "stepId": "overview",
+        "startMs": 0,
+        "endMs": 2250,
+        "label": "Meet Recall Room",
+        "subtitle": "Explore the privacy-aware meeting evidence workspace."
+      },
+      {
+        "stepId": "connect",
+        "startMs": 2250,
+        "endMs": 5375,
+        "label": "Connect workspace",
+        "subtitle": "Authenticate the workspace to load records and execute backend actions."
+      },
+      {
+        "stepId": "configure",
+        "startMs": 5375,
+        "endMs": 8000,
+        "label": "Configure meeting ledger",
+        "subtitle": "Enter the meeting title, purpose, scheduled start time, and privacy classification."
+      },
+      {
+        "stepId": "execute",
+        "startMs": 8000,
+        "endMs": 10375,
+        "label": "Run create workflow",
+        "subtitle": "Submit the form to create and store the meeting ledger."
+      },
+      {
+        "stepId": "inspect",
+        "startMs": 10375,
+        "endMs": 17000,
+        "label": "Inspect durable record",
+        "subtitle": "Search records and verify the newly scheduled meeting details."
+      }
+    ],
+    "generation": {
+      "provider": "OpenRouter",
+      "model": "google/gemini-3.7-flash",
+      "requestedModel": "google/gemini-3.7-flash",
+      "responseModel": "google/gemini-3.7-flash",
+      "responseId": "gen-1787695263-Wv3OfiuWfS8aRSXw99ug",
+      "responseCreatedAt": "2026-08-25T22:01:03.000Z",
+      "input": {
+        "rawVideoSha256": "98f15209dacc18ceccd5b40447c335daa49ea0b673cb51d022f130c9a425d507",
+        "workflowFactsSha256": "78828fe911f243fc2778c586723ab70371b60ef786fefff4c2d0f59e74d31632"
+      },
+      "usage": {
+        "promptTokens": 1561,
+        "completionTokens": 782,
+        "totalTokens": 2343
+      }
+    }
+  },
+  "video": {
+    "raw": {
+      "sha256": "98f15209dacc18ceccd5b40447c335daa49ea0b673cb51d022f130c9a425d507",
+      "codec": "h264",
+      "width": 1280,
+      "height": 720,
+      "durationSeconds": 17,
+      "sizeBytes": 413159
+    },
+    "final": {
+      "file": "docs/tutorial.mp4",
+      "sha256": "0db51743a42349ccdc9ed3cc0bb94e9c2941117befe7bd3a8412d789c876788b",
+      "codec": "h264",
+      "width": 1280,
+      "height": 720,
+      "durationSeconds": 17,
+      "sizeBytes": 421974
+    },
+    "subtitles": {
+      "file": "docs/tutorial.srt",
+      "sha256": "8cc46c48eb562704a8777d40ae3cc0612e66406b27ff39d0e5eaf6d119496dfa",
+      "format": "SubRip"
+    },
+    "overlaysBurnedIn": true,
+    "silent": true
+  }
+}
